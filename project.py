@@ -49,6 +49,8 @@ class Customer:
         self.served = False
         self.speed = None
 
+    def __repr__(self):
+        return str(self.id)
 
 class arc:
     def __init__(self, cust1, cust2, dist):
@@ -98,7 +100,16 @@ class Taxi:
     
     def loadable(self):
         return False if len(self.curr_custs) >= max_cust_one_car else True
-    
+
+    def insertable(self, t, a):
+        curr_in_car = 0
+        for i in range(max(a-6, 0), min(a + 6, len(self.custs))):
+            if self.custs[i].dropoff > t:
+                curr_in_car += 1
+        if max_cust_one_car - 3 <= curr_in_car:
+            return False
+        return True
+
     def __repr__(self):
         s = 'Taxi ' + str(self.id) + ' at (' + str(self.pos[0]) + ',' + str(self.pos[1]) + '):\n'
         for c in self.custs:
@@ -145,8 +156,6 @@ class TaxiProblem:
         print('not assigned: ', self.not_assigned)
 
     def greedy_heuristic(self):
-        self.solve()
-        x = True
         for c in self.custs:
             if not c.served:
                 dist = np.inf
@@ -156,14 +165,13 @@ class TaxiProblem:
                     for a in range(len(self.taxis[t].custs)-1):
                         c_k_1 = self.taxis[t].custs[a]
                         c_k = self.taxis[t].custs[a+1]
-                        T_c_ck = distance(c.dest, c_k.orig) / c_k.speed
+                        T_c_ck = distance(c.orig, c_k.orig) / c_k.speed
                         tmin_cs = max(c.tmin, c_k.tmax - timedelta(seconds=T_c_ck))
-                        T_c_ck1 = distance(c_k_1.dest, c.orig) / c_k_1.speed
-                        tmax_cs = min(c.tmax, c_k_1.tmin + timedelta(seconds=T_c_ck1))
+                        T_c_ck1 = distance(c_k_1.orig, c.orig) / c_k_1.speed
+                        tmax_cs = min(c.tmax, c_k_1.dropoff + timedelta(seconds=T_c_ck1))
                         tmp_dist = distance(c_k_1.dest, c.orig)
-                        if tmin_cs <= tmax_cs and tmp_dist < dist and self.taxis[t].loadable():
-                            if x:
-                                x = False
+                        if tmin_cs <= tmax_cs and tmp_dist < dist and self.taxis[t].insertable(tmax_cs, a):
+                            # print(c_k.id, c_k_1.id)
                             dist = tmp_dist
                             take = t
                             insert = a
@@ -173,6 +181,62 @@ class TaxiProblem:
         # for t in self.taxis:
         #     print(t)
         print('not assigned: ', self.not_assigned)
+
+def check_insert(pb, t, i, c):
+    c_k_1 = pb.taxis[t].custs[i-1]
+    c_k = pb.taxis[t].custs[i]
+    T_c_ck = distance(c.orig, c_k.orig) / c_k.speed
+    tmin_cs = max(c.tmin, c_k.tmax - timedelta(seconds=T_c_ck))
+    T_c_ck1 = distance(c_k_1.orig, c.orig) / c_k_1.speed
+    tmax_cs = min(c.tmax, c_k_1.dropoff + timedelta(seconds=T_c_ck1))
+    return tmin_cs <= tmax_cs and pb.taxis[t].insertable(tmax_cs, i)
+
+def opt(pb):
+    not_assigned = pb.not_assigned
+    for t in range(num_taxis):
+        new_cust = [pb.taxis[t].custs[0]]
+        i = 1
+        num = len(pb.taxis[t].custs)
+        while i < num:
+            for t1 in range(t + 1, num_taxis):
+                new_cust1 = [pb.taxis[t1].custs[0]]
+                i1 = 1
+                run = True
+                num1 = len(pb.taxis[t1].custs)
+                while i1 < num1 and run:
+                    c_i_1 = pb.taxis[t].custs[i]
+                    c_i1 = pb.taxis[t1].custs[i1]
+                    tmin_new = c_i_1.tmin
+                    T_c_ci1 = distance(c_i_1.dest, c_i1.orig) / c_i_1.speed
+                    if tmin_new + timedelta(seconds=T_c_ci1) <= c_i1.tmax:
+                        tmp = list(new_cust)
+                        tmp1 = list(new_cust1)
+                        for j in range(i, num):
+                            tmp1.append(pb.taxis[t].custs[j])
+                        for j in range(i1, num1):
+                            tmp.append(pb.taxis[t1].custs[j])
+                        pb.taxis[t].custs = tmp
+                        pb.taxis[t1].custs = tmp1
+                        for c in pb.custs:
+                            if not c.served:
+                                if check_insert(pb, t, i, c):
+                                    pb.taxis[t].load(c, i-1)
+                                    new_cust.append(c)
+                                    pb.not_assigned -= 1
+                                    i += 1
+                                elif check_insert(pb, t1, i1, c):
+                                    pb.taxis[t1].load(c, i1-1)
+                                    new_cust1.append(c)
+                                    pb.not_assigned -= 1
+                                    i1 += 1
+                        num = len(pb.taxis[t].custs)
+                        num1 = len(pb.taxis[t1].custs)
+                        run = False
+                    new_cust1.append(pb.taxis[t1].custs[i1])
+                    i1 += 1
+            new_cust.append(pb.taxis[t].custs[i])
+            i += 1
+    print(pb.not_assigned)
 
 
 if __name__ == "__main__":
@@ -247,3 +311,5 @@ if __name__ == "__main__":
     
     #pb.greedy_heuristic()
     pb.solve()
+    pb.greedy_heuristic()
+    opt(pb)
