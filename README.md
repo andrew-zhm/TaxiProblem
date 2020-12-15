@@ -28,3 +28,23 @@ I try to serve as much customers as possibl in the solution. We can try to use w
 
 ## Number of samples
 I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to test if the basic functions are working.
+
+## Final report To do
+- [ ] Report
+	- [x] Create doc
+	- [ ] Abstract
+	- [x] Introduction
+	- [ ] Literature Review
+	- [ ] Methods
+		- [ ] Algorithms
+		- [x] Data
+		- [ ] Experiments
+	- [ ] Results
+		- [ ] Rerun results to include 2-opt
+	- [ ] Discussion
+	- [ ] Conclusion
+	- [ ] Final pass over document
+- [ ] Code
+	- [ ] Merge different branches
+	- [ ] Add docstrings
+	- [ ] Clarify code where unclear

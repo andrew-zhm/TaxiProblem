@@ -101,7 +101,7 @@ class Taxi:
         self.curr_custs.append(c)
         print('Taxi', self.id, 'load Customer', str(c.id), 'at', c.tmin)
         print('Currently in taxi', self.id, ':', [i.id for i in self.curr_custs])
-        if insert:
+        if insert != None:
             self.custs.insert(insert + 1, c)
         else:
             self.custs.append(c)
@@ -146,11 +146,14 @@ class Taxi:
         clear what they are referring to by just the context alone
         """
         curr_in_car = 0
+        new_custs = []
         for i in range(max(a-6, 0), min(a + 6, len(self.custs))):
             if self.custs[i].dropoff > t:
+                new_custs.append(self.custs[i])
                 curr_in_car += 1
-        if max_cust_one_car - 3 <= curr_in_car:
+        if max_cust_one_car - 2 <= curr_in_car:
             return False
+        self.curr_custs = new_custs
         return True
 
     def __repr__(self):
