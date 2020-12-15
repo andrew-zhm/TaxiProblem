@@ -46,7 +46,7 @@ class Customer:
         :param tcall: time of request (datetime)
         :param tmin: earliest pickup time (datetime)
         :param fare: fare that was paid by historic passenger (float)
-        :param dropoff: @Houming
+        :param dropoff: the dropoff time for this customer
         :attr served: whether customer has been served (boolean)
         :attr speed: speed of customer at certain time (float)
         """
@@ -77,9 +77,9 @@ class Taxi:
         Initializes a Taxi object
         :param id_: unique Taxi id (int)
         :param pos: current position coordinates (tuple(float, float))
-        :param time: @Houming
+        :param time: the time this taxi picks up his first customer
         :attr custs: customers served by taxi (list(int*))
-        :attr dropoff: @Houming
+        :attr dropoff: the dropoff time this taxi drops off the previous customer
         :attr speed: current speed of vehicle
         :attr curr_custs: current customers in taxi (list(int*))
         """
@@ -97,7 +97,7 @@ class Taxi:
         Add customer to taxi by adding it to self.custs, and changing the
         position of the taxi to the origin position of the customer. 
         :param c: customer object to add
-        :param insert: @Houming
+        :param insert: the position to insert this customer into the list (None if append to end)
         """
         self.curr_custs.append(c)
         print('Taxi', self.id, 'load Customer', str(c.id), 'at', c.tmin)
@@ -113,7 +113,8 @@ class Taxi:
         speed = distance(c.dest, c.orig) / (
             c.dropoff - c.tmin - timedelta(seconds=120)
         ).seconds
-        # @Houming why do you do this here?
+        # @Houming
+        # if this is the first customer he picked up, initialize the speed to 0.002
         if speed == 0:
             speed = 0.002
         c.speed = speed
@@ -121,7 +122,8 @@ class Taxi:
 
     def unload(self, t):
         """
-        @Houming
+        Check if there is any customer who is dropped off at time t
+        :param t: the time to check for any dropped off customer
         """
         new_custs = []
         curr = ''
@@ -144,11 +146,15 @@ class Taxi:
 
     def insertable(self, t, a):
         """
-        @Houming perhaps write out the t and a here since it's not entirely
-        clear what they are referring to by just the context alone
+        @Houming
+        Check if a customer is able to be inserted into the taxi schedule at time t
+        :param t: the time at which we try to add the new customer in
+        :param a: the index of the desired position in the customer list
         """
         curr_in_car = 0
         new_custs = []
+        # check how many customers are on the taxi at time t
+        # only need to check the previous 6 and next 6 customers in the taxi schedule
         for i in range(max(a-6, 0), min(a + 6, len(self.custs))):
             if self.custs[i].dropoff > t:
                 new_custs.append(self.custs[i])
@@ -173,7 +179,7 @@ class RideShareProblem:
         Initialize a RideShareProblem instance
         :param custs: customers to be served (list(class Customer*))
         :param taxis: taxis included in the simulation (list(class Taxi*))
-        :param arcs: @Houming
+        :param arcs: the arcs between every two adjacent customers in the customer list
         :param not_assigned: number of customers that were not assigned in the
         ridesharing problem instance
         """
@@ -222,6 +228,7 @@ class RideShareProblem:
             take = None
             for t in range(num_taxis):
                 # @Houming why do you call unload on the tmax here?
+                # unload the customer at tmax time since this is the latest time to pick up this customer
                 self.taxis[t].unload(c.tmax)
                 if self.taxis[t].loadable():
                     tmp_dist = distance(self.taxis[t].pos, c.orig)
@@ -281,16 +288,22 @@ class RideShareProblem:
                         # write what these variables are, or to alternatively
                         # add comments about what they are (though the former
                         # is preferred)
+                        # c_k_1 and c_k are the two customers in the customer list
+                        # try to insert this unserved customer in-between the two customers
+                        # follow the algorithm in the paper
                         c_k_1 = self.taxis[t].custs[a]
                         c_k = self.taxis[t].custs[a+1]
+                        # T_c_ck is the time for this taxi to pick up c from the previous cust
                         T_c_ck = distance(c.orig, c_k.orig) / c_k.speed
                         tmin_cs = max(
                             c.tmin, c_k.tmax - timedelta(seconds=T_c_ck)
                         )
+                        # T_c_ck1 is the time for this taxi to pick up the next cust from c
                         T_c_ck1 = distance(c_k_1.orig, c.orig) / c_k_1.speed
                         tmax_cs = min(
                             c.tmax, c_k_1.dropoff + timedelta(seconds=T_c_ck1)
                         )
+                        # find the closest distance of the taxi
                         tmp_dist = distance(c_k_1.dest, c.orig)
                         if (tmin_cs <= tmax_cs and tmp_dist < dist and
                             self.taxis[t].insertable(tmax_cs, a)):
