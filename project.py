@@ -235,12 +235,7 @@ class RideShareProblem:
             if take != None:
                 self.not_assigned -= 1
                 self.taxis[take].load(c)
-<<<<<<< HEAD
-=======
                 self.served_customers.append(c)
-        #for t in self.taxis:
-        #    print(t.pos)
->>>>>>> Add information about miles travelled
         print('not assigned: ', self.not_assigned)
         print("Total miles", sum([taxi.miles_travelled for taxi in self.taxis]))
         print(self.compute_fare())
@@ -306,11 +301,6 @@ class RideShareProblem:
                     self.served_customers.append(c)
                     self.not_assigned -= 1
                     self.taxis[take].load(c, insert)
-<<<<<<< HEAD
-=======
-        #for t in self.taxis:
-        #     print(t.pos)
->>>>>>> Add information about miles travelled
         print('not assigned: ', self.not_assigned)
         print(self.compute_fare())
         print("Total miles", sum([taxi.miles_travelled for taxi in self.taxis]))
