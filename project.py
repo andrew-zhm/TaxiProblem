@@ -332,6 +332,10 @@ def check_insert(pb, t, i, c):
 def opt(pb):
     """
     @Houming
+    Implement the 2-opt algorithm following the description in the paper
+    Takes in a taxi problem, swap the customers of two taxis
+    Try to insert the unserved customers in-between the new customer sequence.
+    :param pb: the taxi problem variable
     """
     not_assigned = pb.not_assigned
     for t in range(num_taxis):
