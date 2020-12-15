@@ -8,7 +8,7 @@ from process_data import process_data
 
 
 max_cust_one_car = 4
-f_name = 'yellow_tripdata_2016-04.csv'
+f_name = 'cab_2_hrs.csv'
 
 
 def distance(cord1, cord2):
@@ -38,6 +38,18 @@ def distance(cord1, cord2):
 
 class Customer:
     def __init__(self, id_, orig, dest, tcall, tmin, tmax, fare, dropoff):
+        """
+        Initializes a customer object
+        :param id_: unique customer id (int)
+        :param orig: origin long, lat coordinates (tuple(float, float))
+        :param dest: destination long, lat coordinates (tuple(float, float))
+        :param tcall: time of request (datetime)
+        :param tmin: earliest pickup time (datetime)
+        :param fare: fare that was paid by historic passenger (float)
+        :param dropoff: @Houming
+        :attr served: whether customer has been served (boolean)
+        :attr speed: speed of customer at certain time (float)
+        """
         self.id = id_
         self.orig = orig
         self.dest = dest
@@ -61,6 +73,16 @@ class arc:
 
 class Taxi:
     def __init__(self, id_, pos, time):
+        """
+        Initializes a Taxi object
+        :param id_: unique Taxi id (int)
+        :param pos: current position coordinates (tuple(float, float))
+        :param time: @Houming
+        :attr custs: customers served by taxi (list(int*))
+        :attr dropoff: @Houming
+        :attr speed: current speed of vehicle
+        :attr curr_custs: current customers in taxi (list(int*))
+        """
         self.id = id_
         self.pos = pos
         self.time = time
@@ -70,6 +92,12 @@ class Taxi:
         self.curr_custs = []
 
     def load(self, c, insert=None):
+        """
+        Add customer to taxi by adding it to self.custs, and changing the
+        position of the taxi to the origin position of the customer. 
+        :param c: customer object to add
+        :param insert: @Houming
+        """
         self.curr_custs.append(c)
         print('Taxi', self.id, 'load Customer', str(c.id), 'at', c.tmin)
         print('Currently in taxi', self.id, ':', [i.id for i in self.curr_custs])
@@ -80,13 +108,19 @@ class Taxi:
         self.pos = c.orig
         self.dropoff = c.dropoff
         c.served = True
-        speed = distance(c.dest, c.orig) / (c.dropoff - c.tmin - timedelta(seconds=120)).seconds
+        speed = distance(c.dest, c.orig) / (
+            c.dropoff - c.tmin - timedelta(seconds=120)
+        ).seconds
+        # @Houming why do you do this here?
         if speed == 0:
             speed = 0.002
         c.speed = speed
         self.speed = speed
 
     def unload(self, t):
+        """
+        @Houming
+        """
         new_custs = []
         curr = ''
         for c in self.curr_custs:
@@ -99,9 +133,18 @@ class Taxi:
         self.curr_custs = new_custs
     
     def loadable(self):
+        """
+        Indicate whether a taxi can still take more customers by comparing the
+        current number of customers with max_cust_one_car
+        :returns: boolean
+        """
         return False if len(self.curr_custs) >= max_cust_one_car else True
 
     def insertable(self, t, a):
+        """
+        @Houming perhaps write out the t and a here since it's not entirely
+        clear what they are referring to by just the context alone
+        """
         curr_in_car = 0
         for i in range(max(a-6, 0), min(a + 6, len(self.custs))):
             if self.custs[i].dropoff > t:
@@ -111,33 +154,62 @@ class Taxi:
         return True
 
     def __repr__(self):
-        s = 'Taxi ' + str(self.id) + ' at (' + str(self.pos[0]) + ',' + str(self.pos[1]) + '):\n'
+        s = ('Taxi ' + str(self.id) + ' at (' + str(self.pos[0]) + ',' +
+             str(self.pos[1]) + '):\n')
         for c in self.custs:
-            s += '  Customer ' + str(c.id) + ' from ' + str(c.tmax) + ' to ' + str(c.dropoff) + '\n'
+            s += ('  Customer ' + str(c.id) + ' from ' + str(c.tmax) +
+                  ' to ' + str(c.dropoff) + '\n')
         return s
 
 
-class TaxiProblem:
+class RideShareProblem:
     def __init__(self):
+        """
+        Initialize a RideShareProblem instance
+        :param custs: customers to be served (list(class Customer*))
+        :param taxis: taxis included in the simulation (list(class Taxi*))
+        :param arcs: @Houming
+        :param not_assigned: number of customers that were not assigned in the
+        ridesharing problem instance
+        """
         self.custs = []
         self.taxis = []
         self.arcs = []
         self.not_assigned = num_custs
 
     def add_cust(self, customer):
+        """
+        Add customer to RideShareProblem
+        :param customer: class Customer
+        """
         self.custs.append(customer)
 
     def add_taxi(self, taxi):
+        """
+        Add taxi to RideShareProblem
+        :param taxi: class Taxi
+        """
         self.taxis.append(taxi)
     
     def add_arc(self, a):
+        """
+        Add arc to RideShareProblem
+        :param arc: class Arc
+        """
         self.arcs.append(a)
 
     def solve(self):
+        """
+        Solve RideSharingProblem naively (offline), by looping through the
+        customers, then through the taxis, and add customers where taxis still
+        have space
+        :return: number of unserved customers
+        """
         for c in self.custs:
             dist = np.inf
             take = None
             for t in range(num_taxis):
+                # @Houming why do you call unload on the tmax here?
                 self.taxis[t].unload(c.tmax)
                 if self.taxis[t].loadable():
                     tmp_dist = distance(self.taxis[t].pos, c.orig)
@@ -151,11 +223,15 @@ class TaxiProblem:
             if take != None:
                 self.not_assigned -= 1
                 self.taxis[take].load(c)
-        # for t in self.taxis:
-        #     print(t)
         print('not assigned: ', self.not_assigned)
 
     def greedy_heuristic(self):
+        """
+        Improve the solution of the RideSharingProblem by performing greedy
+        heuristic insertion. See our final report for details on the working of
+        this algorithm. 
+        :return: number of unserved customers
+        """
         for c in self.custs:
             if not c.served:
                 dist = np.inf
@@ -163,23 +239,29 @@ class TaxiProblem:
                 insert = None
                 for t in range(num_taxis):
                     for a in range(len(self.taxis[t].custs)-1):
+                        # @Houming it would be helpful here to more explicitly
+                        # write what these variables are, or to alternatively
+                        # add comments about what they are (though the former
+                        # is preferred)
                         c_k_1 = self.taxis[t].custs[a]
                         c_k = self.taxis[t].custs[a+1]
                         T_c_ck = distance(c.orig, c_k.orig) / c_k.speed
-                        tmin_cs = max(c.tmin, c_k.tmax - timedelta(seconds=T_c_ck))
+                        tmin_cs = max(
+                            c.tmin, c_k.tmax - timedelta(seconds=T_c_ck)
+                        )
                         T_c_ck1 = distance(c_k_1.orig, c.orig) / c_k_1.speed
-                        tmax_cs = min(c.tmax, c_k_1.dropoff + timedelta(seconds=T_c_ck1))
+                        tmax_cs = min(
+                            c.tmax, c_k_1.dropoff + timedelta(seconds=T_c_ck1)
+                        )
                         tmp_dist = distance(c_k_1.dest, c.orig)
-                        if tmin_cs <= tmax_cs and tmp_dist < dist and self.taxis[t].insertable(tmax_cs, a):
-                            # print(c_k.id, c_k_1.id)
+                        if (tmin_cs <= tmax_cs and tmp_dist < dist and
+                            self.taxis[t].insertable(tmax_cs, a)):
                             dist = tmp_dist
                             take = t
                             insert = a
                 if take != None:
                     self.not_assigned -= 1
                     self.taxis[take].load(c, insert)
-        # for t in self.taxis:
-        #     print(t)
         print('not assigned: ', self.not_assigned)
 
 def check_insert(pb, t, i, c):
@@ -192,6 +274,9 @@ def check_insert(pb, t, i, c):
     return tmin_cs <= tmax_cs and pb.taxis[t].insertable(tmax_cs, i)
 
 def opt(pb):
+    """
+    @Houming
+    """
     not_assigned = pb.not_assigned
     for t in range(num_taxis):
         new_cust = [pb.taxis[t].custs[0]]
@@ -263,7 +348,7 @@ if __name__ == "__main__":
     sample = sorted(random.sample(range(df.shape[0]), num_custs))
 
     # create the taxi problem
-    pb = TaxiProblem()
+    pb = RideShareProblem()
     for i, s in enumerate(sample):
         row = df.iloc[s]
         orig = (row['pickup_latitude'], row['pickup_longitude'])
