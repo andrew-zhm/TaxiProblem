@@ -66,6 +66,12 @@ class Customer:
 
 class arc:
     def __init__(self, cust1, cust2, dist):
+        """
+        Initialize arc between two customers
+        :param cust1: first customer (class Customer)
+        :param cust2: second customer (class Customer)
+        :param dist: distance between cust1 and cust2
+        """
         self.cust1 = cust1
         self.cust2 = cust2
         self.dist = dist
@@ -113,7 +119,6 @@ class Taxi:
         speed = distance(c.dest, c.orig) / (
             c.dropoff - c.tmin - timedelta(seconds=120)
         ).seconds
-        # @Houming
         # if this is the first customer he picked up, initialize the speed to 0.002
         if speed == 0:
             speed = 0.002
@@ -146,7 +151,6 @@ class Taxi:
 
     def insertable(self, t, a):
         """
-        @Houming
         Check if a customer is able to be inserted into the taxi schedule at time t
         :param t: the time at which we try to add the new customer in
         :param a: the index of the desired position in the customer list
@@ -227,8 +231,8 @@ class RideShareProblem:
             dist = np.inf
             take = None
             for t in range(num_taxis):
-                # @Houming why do you call unload on the tmax here?
-                # unload the customer at tmax time since this is the latest time to pick up this customer
+                # unload the customer at tmax time since this is the latest
+                # time to pick up this customer
                 self.taxis[t].unload(c.tmax)
                 if self.taxis[t].loadable():
                     tmp_dist = distance(self.taxis[t].pos, c.orig)
@@ -284,21 +288,19 @@ class RideShareProblem:
                 insert = None
                 for t in range(num_taxis):
                     for a in range(len(self.taxis[t].custs)-1):
-                        # @Houming it would be helpful here to more explicitly
-                        # write what these variables are, or to alternatively
-                        # add comments about what they are (though the former
-                        # is preferred)
-                        # c_k_1 and c_k are the two customers in the customer list
-                        # try to insert this unserved customer in-between the two customers
-                        # follow the algorithm in the paper
+                        # c_k_1 and c_k are the two customers in the customer
+                        # list try to insert this unserved customer in-between
+                        # the two customers follow the algorithm in the paper
                         c_k_1 = self.taxis[t].custs[a]
                         c_k = self.taxis[t].custs[a+1]
-                        # T_c_ck is the time for this taxi to pick up c from the previous cust
+                        # T_c_ck is the time for this taxi to pick up c from
+                        # the previous cust
                         T_c_ck = distance(c.orig, c_k.orig) / c_k.speed
                         tmin_cs = max(
                             c.tmin, c_k.tmax - timedelta(seconds=T_c_ck)
                         )
-                        # T_c_ck1 is the time for this taxi to pick up the next cust from c
+                        # T_c_ck1 is the time for this taxi to pick up the next
+                        # cust from c
                         T_c_ck1 = distance(c_k_1.orig, c.orig) / c_k_1.speed
                         tmax_cs = min(
                             c.tmax, c_k_1.dropoff + timedelta(seconds=T_c_ck1)
@@ -331,7 +333,6 @@ def check_insert(pb, t, i, c):
 
 def opt(pb):
     """
-    @Houming
     Implement the 2-opt algorithm following the description in the paper
     Takes in a taxi problem, swap the customers of two taxis
     Try to insert the unserved customers in-between the new customer sequence.
