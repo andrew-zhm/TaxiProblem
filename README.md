@@ -44,9 +44,9 @@ I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to
 	- [ ] Discussion
 	- [ ] Conclusion
 	- [ ] Final pass over document
-- [ ] Code
-	- [ ] Merge different branches
-	- [ ] Add docstrings
+- [x] Code
+	- [x] Merge different branches
+	- [x] Add docstrings
 		- [x] First pass (Lars)
-		- [ ] Fill in missing (Houming)
-	- [ ] Clarify code where unclear
+		- [x] Fill in missing (Houming)
+	- [x] Clarify code where unclear
