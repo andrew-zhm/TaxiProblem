@@ -90,6 +90,7 @@ class Taxi:
         self.dropoff = None
         self.speed = None
         self.curr_custs = []
+        self.miles_travelled = 0
 
     def load(self, c, insert=None):
         """
@@ -105,6 +106,7 @@ class Taxi:
             self.custs.insert(insert + 1, c)
         else:
             self.custs.append(c)
+        self.miles_travelled += distance(self.pos, c.orig)
         self.pos = c.orig
         self.dropoff = c.dropoff
         c.served = True
@@ -179,6 +181,7 @@ class RideShareProblem:
         self.taxis = []
         self.arcs = []
         self.not_assigned = num_custs
+        self.served_customers = []
 
     def add_cust(self, customer):
         """
@@ -200,6 +203,12 @@ class RideShareProblem:
         :param arc: class Arc
         """
         self.arcs.append(a)
+
+    def compute_fare(self):
+        total_revenue = 0
+        for c in self.served_customers:
+            total_revenue += c.fare
+        return total_revenue
 
     def solve(self):
         """
@@ -226,8 +235,39 @@ class RideShareProblem:
             if take != None:
                 self.not_assigned -= 1
                 self.taxis[take].load(c)
+<<<<<<< HEAD
+=======
+                self.served_customers.append(c)
+        #for t in self.taxis:
+        #    print(t.pos)
+>>>>>>> Add information about miles travelled
         print('not assigned: ', self.not_assigned)
+        print("Total miles", sum([taxi.miles_travelled for taxi in self.taxis]))
+        print(self.compute_fare())
 
+
+    def nearest(self):
+        for c in self.custs:
+            dist = np.inf
+            take = None
+            min_distance = 99999
+            for t in range(num_taxis):
+                self.taxis[t].unload(c.tmax)
+                if self.taxis[t].loadable():
+                    dist = distance(self.taxis[t].pos, c.orig)
+                    if dist < min_distance:
+                        min_distance = dist
+                        take = t
+                #print(c.id, take)
+            if take != None:
+                self.not_assigned -= 1
+                self.taxis[take].load(c)
+                self.served_customers.append(c)
+        print('not assigned: ', self.not_assigned)
+        print("Total miles", sum([taxi.miles_travelled for taxi in self.taxis]))
+        print(self.compute_fare())
+
+                        
     def greedy_heuristic(self):
         """
         Improve the solution of the RideSharingProblem by performing greedy
@@ -263,9 +303,19 @@ class RideShareProblem:
                             take = t
                             insert = a
                 if take != None:
+                    self.served_customers.append(c)
                     self.not_assigned -= 1
                     self.taxis[take].load(c, insert)
+<<<<<<< HEAD
+=======
+        #for t in self.taxis:
+        #     print(t.pos)
+>>>>>>> Add information about miles travelled
         print('not assigned: ', self.not_assigned)
+        print(self.compute_fare())
+        print("Total miles", sum([taxi.miles_travelled for taxi in self.taxis]))
+
+            
 
 def check_insert(pb, t, i, c):
     c_k_1 = pb.taxis[t].custs[i-1]
@@ -388,7 +438,11 @@ if __name__ == "__main__":
 
     for index, row in df.head(num_taxis).iterrows():
         start_pos = (row['pickup_latitude'], row['pickup_longitude'])
+        print(start_pos[0])
         pb.add_taxi(Taxi(index, start_pos, row['tpep_pickup_datetime']))
+    for index, row in df.head(num_taxis).iterrows():
+        start_pos = (row['pickup_latitude'], row['pickup_longitude'])
+        print(start_pos[1])
 
     custs = pb.custs
     for i in range(len(custs)):
@@ -396,8 +450,11 @@ if __name__ == "__main__":
         for j in range(i + 1, len(custs)):
             orig = custs[j].orig
             pb.add_arc(arc(custs[i], custs[j], distance(dest, orig)))
+
     
     #pb.greedy_heuristic()
     pb.solve()
     pb.greedy_heuristic()
     opt(pb)
+    #pb.solve()
+    #pb.nearest()
