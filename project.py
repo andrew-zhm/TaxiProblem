@@ -381,6 +381,12 @@ if __name__ == "__main__":
         default=1000,
         help="Number of customers within time window"
     )
+    parser.add_argument(
+        '--algo',
+        choices=['base', 'greedy', 'opt', 'online'],
+        default='base',
+        help="Select which algorithm to use"
+    )
     args = parser.parse_args()
     num_taxis = args.taxis
     num_custs = args.customers
@@ -441,10 +447,14 @@ if __name__ == "__main__":
             orig = custs[j].orig
             pb.add_arc(arc(custs[i], custs[j], distance(dest, orig)))
 
-    
-    #pb.greedy_heuristic()
-    pb.solve()
-    pb.greedy_heuristic()
-    opt(pb)
-    #pb.solve()
-    #pb.nearest()
+
+    if args.algo == 'base':
+        pb.solve()
+    elif args.algo == 'greedy':
+        pb.solve()
+        pb.greedy_heuristic()
+    elif args.algo == 'opt':
+        pb.solve()
+        opt(pb)
+    else:
+        pb.nearest()
