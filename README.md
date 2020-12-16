@@ -39,8 +39,8 @@ I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to
 		- [ ] Algorithms
 		- [x] Data
 		- [ ] Experiments
-	- [ ] Results
-		- [ ] Rerun results to include 2-opt
+	- [x] Results
+		- [x] Rerun results to include 2-opt
 	- [ ] Discussion
 	- [ ] Conclusion
 	- [ ] Final pass over document
