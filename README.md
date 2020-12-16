@@ -34,7 +34,7 @@ I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to
 	- [x] Create doc
 	- [ ] Abstract
 	- [x] Introduction
-	- [ ] Literature Review
+	- [x] Literature Review
 	- [ ] Methods
 		- [ ] Algorithms
 		- [x] Data
