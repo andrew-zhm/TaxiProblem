@@ -32,11 +32,11 @@ I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to
 ## Final report To do
 - [ ] Report
 	- [x] Create doc
-	- [ ] Abstract
+	- [x] Abstract
 	- [x] Introduction
 	- [x] Literature Review
 	- [ ] Methods
-		- [ ] Algorithms
+		- [x] Algorithms
 		- [x] Data
 		- [ ] Experiments
 	- [x] Results
