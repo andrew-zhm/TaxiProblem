@@ -35,10 +35,10 @@ I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to
 	- [x] Abstract
 	- [x] Introduction
 	- [x] Literature Review
-	- [ ] Methods
+	- [x] Methods
 		- [x] Algorithms
 		- [x] Data
-		- [ ] Experiments
+		- [x] Experiments
 	- [x] Results
 		- [x] Rerun results to include 2-opt
 	- [ ] Discussion
