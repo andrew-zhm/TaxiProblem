@@ -41,8 +41,8 @@ I used 1,000 customers and 100 taxis for debugging propose. It is mainly used to
 		- [x] Experiments
 	- [x] Results
 		- [x] Rerun results to include 2-opt
-	- [ ] Discussion
-	- [ ] Conclusion
+	- [x] Discussion
+	- [x] Conclusion
 	- [ ] Final pass over document
 - [x] Code
 	- [x] Merge different branches
